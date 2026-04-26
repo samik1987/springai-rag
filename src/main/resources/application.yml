@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3308/springai
+    username: root
+    password: root1234
+  ai:
+    openai:
+      api-key: ${api-key}
+    vectorstore:
+      mariadb:
+        initialize-schema: true
+        distance-type: COSINE
+        dimensions: 1536
+        table-name: ragstore
+
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.ai.chat.client.advisor: DEBUG
