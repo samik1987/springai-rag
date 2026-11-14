@@ -2,6 +2,7 @@ package com.example.springai_rag.controllers;
 
 import com.example.springai_rag.services.VectorStoreService;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
@@ -11,6 +12,7 @@ import org.springframework.ai.rag.preretrieval.query.expansion.MultiQueryExpande
 import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
 import org.springframework.ai.rag.retrieval.join.ConcatenationDocumentJoiner;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,11 +55,13 @@ public class VectorController {
 
         List<Document> documents = this.vectorStoreService.doSimilaritySearch(message);
 
+        // Extra to see the similarity search result
         List<String> documentList = documents.stream().map(Document::getText).toList();
 
         String filterContext = String.join(" , ",documentList);
 
         System.out.println("Similarity Search Result = "+filterContext);
+        // Extra to see the similarity search result
 
         PromptTemplate template = new PromptTemplate(
                 new ClassPathResource("prompts/user-template.st")
@@ -88,16 +92,24 @@ public class VectorController {
     public String getOpenAIResponseMetadataV2(@RequestBody String message, @RequestHeader String userid)
     {
 
+        SearchRequest srchReq = SearchRequest.builder().topK(3)
+                .similarityThreshold(0.6)
+                .query(message)
+                .build();
+
+        QuestionAnswerAdvisor questionAnswerAdvisor =
+                QuestionAnswerAdvisor.builder(vectorStore).searchRequest(srchReq).build();
 
         var retriever = VectorStoreDocumentRetriever.builder()
                 .vectorStore(vectorStore)
                 .topK(3)
-                .similarityThreshold(0.6)
+                .similarityThreshold(0.8)
                 .build();
 
 
         return _openAiChatClient.prompt()
-                .advisors(RetrievalAugmentationAdvisor.builder().documentRetriever(retriever).build())
+                .advisors(questionAnswerAdvisor)
+                //.advisors(RetrievalAugmentationAdvisor.builder().documentRetriever(retriever).build())
                 .user(message)
                 .call()
                 .content();
