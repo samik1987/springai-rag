@@ -76,22 +76,22 @@ public class VectorStoreService {
     {
         System.out.println("PDR Vector Data saving started..");
 
-//        List<Document> realDocument = pdfData.LoadPdf();
+       // List<Document> realDocument = pdfData.LoadPdf();
 //        realDocument.forEach(
 //                System.out::println
 //        );
 
         // Ordinary chunking: split by a 100-token window and punctuation, without comparing meaning.
-        // var splitter = new TokenTextSplitter(100,200,10,5000,true, List.of('.', '?', '!', '\n'));
-        // List<Document> tranformedDocuments = splitter.transform(pdfData.LoadPdf());
+//         var splitter = new TokenTextSplitter(100,200,10,5000,true, List.of('.', '?', '!', '\n'));
+//         List<Document> tranformedDocuments = splitter.transform(pdfData.LoadPdf());
 
-        // Semantic chunking: embed each sentence and start a new chunk where the topic changes.
+        // Semantic chunking: embed each sentence and start a new chunk where the topic/context changes.
         List<Document> tranformedDocuments = semanticChunk(pdfData.LoadPdf());
         for (Document document : tranformedDocuments) {
-            document.getMetadata().putAll(embeddingMetadata("sample.pdf"));
+            document.getMetadata().putAll(embeddingMetadata("sample1.pdf"));
         }
 
-        deleteBySource("sample.pdf");
+        deleteBySource("sample1.pdf");
         vectorStore.add(tranformedDocuments);
         storeVectorInMetadata(tranformedDocuments);
         System.out.println("PDF Data saving Completed");

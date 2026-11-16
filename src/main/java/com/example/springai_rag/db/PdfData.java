@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public class PdfData {
 
-    @Value("classpath:sample.pdf")
+    @Value("classpath:sample1.pdf")
     private Resource pdfResource ;
 
     public List<Document> LoadPdf()
